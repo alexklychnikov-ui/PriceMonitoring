@@ -110,7 +110,9 @@ def scrape_all_sites(self) -> dict[str, Any]:
 def analyze_prices(self) -> dict[str, Any]:
     async def _analyze() -> dict[str, Any]:
         async with AsyncSessionLocal() as session:
-            changed_prices = await session.scalar(select(func.count(Alert.id)).where(Alert.alert_type == "price_changed"))
+            changed_prices = await session.scalar(
+                select(func.count(Alert.id)).where(Alert.alert_type.in_(["price_drop", "price_rise", "price_changed"]))
+            )
         payload = {
             "created_at": datetime.now(timezone.utc).isoformat(),
             "summary": "AI analysis placeholder for stage 4",
@@ -137,7 +139,7 @@ def analyze_prices_task(self, _group_results: list[dict[str, Any]] | None = None
             async with AsyncSessionLocal() as session:
                 changed_product_ids = list(
                     await session.scalars(
-                        select(Alert.product_id).where(Alert.alert_type == "price_changed").distinct()
+                        select(Alert.product_id).where(Alert.alert_type.in_(["price_drop", "price_rise", "price_changed"])).distinct()
                     )
                 )
                 if not changed_product_ids:

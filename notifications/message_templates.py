@@ -4,7 +4,7 @@ from jinja2 import Environment
 
 
 PRICE_DROP_TEMPLATE = """
-🟢 *Снижение цены!*
+🟢 *Снижение цены\!*
 
 🏪 Магазин: {{ site_name }}
 🔖 Товар: {{ product_name }}

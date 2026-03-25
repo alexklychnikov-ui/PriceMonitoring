@@ -138,7 +138,12 @@ class RecommendationEngine:
             products_count = int(await session.scalar(select(func.count(Product.id))) or 0)
             since = datetime.now(timezone.utc) - timedelta(days=7)
             price_changes = int(
-                await session.scalar(select(func.count(Alert.id)).where(Alert.alert_type == "price_changed", Alert.triggered_at >= since))
+                await session.scalar(
+                    select(func.count(Alert.id)).where(
+                        Alert.alert_type.in_(["price_drop", "price_rise", "price_changed"]),
+                        Alert.triggered_at >= since,
+                    )
+                )
                 or 0
             )
         prompt = MARKET_OVERVIEW_PROMPT.format(

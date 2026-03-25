@@ -4,9 +4,15 @@ from config import settings
 
 
 CELERYBEAT_SCHEDULE = {
-    "scrape-all-every-6-hours": {
-        "task": "scheduler.tasks.scrape_all_sites",
-        "schedule": crontab(minute=0, hour=f"*/{max(settings.PARSE_INTERVAL_HOURS, 1)}"),
+    "scrape-express-shina-daily-02-00": {
+        "task": "scheduler.tasks.scrape_site",
+        "schedule": crontab(minute=0, hour=10),
+        "args": ("express_shina",),
+    },
+    "scrape-kolesa-darom-daily-02-00": {
+        "task": "scheduler.tasks.scrape_site",
+        "schedule": crontab(minute=0, hour=10),
+        "args": ("kolesa_darom",),
     },
     "send-alerts-every-5-min": {
         "task": "scheduler.tasks.send_pending_alerts",

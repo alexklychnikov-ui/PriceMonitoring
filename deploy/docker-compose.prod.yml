@@ -72,6 +72,7 @@ services:
       OLLAMA_MODEL: ${OLLAMA_MODEL}
       PARSE_INTERVAL_HOURS: ${PARSE_INTERVAL_HOURS}
       PRICE_ALERT_THRESHOLD_PCT: ${PRICE_ALERT_THRESHOLD_PCT}
+      CELERY_WORKER: "1"
     depends_on:
       db:
         condition: service_healthy
@@ -98,6 +99,7 @@ services:
       OLLAMA_MODEL: ${OLLAMA_MODEL}
       PARSE_INTERVAL_HOURS: ${PARSE_INTERVAL_HOURS}
       PRICE_ALERT_THRESHOLD_PCT: ${PRICE_ALERT_THRESHOLD_PCT}
+      CELERY_WORKER: "1"
     depends_on:
       db:
         condition: service_healthy
@@ -136,6 +138,8 @@ services:
       context: ..
       dockerfile: Dockerfile
     command: celery -A scheduler.celery_app flower --port=5555 --basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}
+    ports:
+      - "5555:5555"
     environment:
       REDIS_URL: redis://redis:6379/0
     depends_on:
@@ -154,7 +158,8 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ../frontend/dist:/usr/share/nginx/html:ro
-      - certbot_data:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
     restart: unless-stopped
 
   prometheus:
@@ -169,10 +174,12 @@ services:
     restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:10.4.3
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_ALERTING_ENABLED: "false"
+      GF_UNIFIED_ALERTING_ENABLED: "false"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
@@ -185,6 +192,9 @@ services:
     command: --cleanup --interval 300
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DOCKER_API_VERSION: "1.43"
+      WATCHTOWER_HTTP_API_UPDATE: "false"
     restart: unless-stopped
 
 volumes:
@@ -192,4 +202,3 @@ volumes:
   redis_data:
   prometheus_data:
   grafana_data:
-  certbot_data:

@@ -87,5 +87,8 @@ CREATE INDEX IF NOT EXISTS idx_products_brand_tire_size_radius
 CREATE INDEX IF NOT EXISTS idx_products_tire_size_radius
     ON products (tire_size, radius);
 
+CREATE INDEX IF NOT EXISTS idx_products_site_name_size_diameter
+    ON products (site_id, name, tire_size, diameter);
+
 CREATE INDEX IF NOT EXISTS idx_subscriptions_product_active
     ON user_subscriptions (product_id, is_active);

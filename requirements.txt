@@ -11,6 +11,7 @@ alembic
 pydantic-settings
 pytest
 celery
+flower
 redis
 fastapi
 uvicorn

@@ -4,7 +4,6 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from telegram import Bot
-from telegram.constants import ParseMode
 from telegram.helpers import escape_markdown
 
 from config import settings
@@ -50,7 +49,7 @@ class AlertSender:
             savings=max(old_price - new_price, 0),
             product_url=product.url,
         )
-        await self.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN_V2)
+        await self.bot.send_message(chat_id=chat_id, text=message)
         logger.info("message_sent chat_id=%s type=price_drop", chat_id)
         return True
 
@@ -67,7 +66,7 @@ class AlertSender:
             new_price=new_price,
             change_pct=change_pct,
         )
-        await self.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN_V2)
+        await self.bot.send_message(chat_id=chat_id, text=message)
         logger.info("message_sent chat_id=%s type=price_rise", chat_id)
         return True
 
@@ -84,17 +83,17 @@ class AlertSender:
             top_deals=[],
             ai_recommendation=report,
         )
-        await self.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN_V2)
+        await self.bot.send_message(chat_id=chat_id, text=message)
         logger.info("message_sent chat_id=%s type=weekly_digest", chat_id)
         return True
 
     async def send_parse_error_notification(self, site_name: str, error: str) -> bool:
         message = f"⚠️ Ошибка парсинга {escape_markdown(site_name, version=2)}: {escape_markdown(error, version=2)}"
-        await self.bot.send_message(chat_id=settings.TELEGRAM_CHAT_ID, text=message, parse_mode=ParseMode.MARKDOWN_V2)
+        await self.bot.send_message(chat_id=settings.TELEGRAM_CHAT_ID, text=message)
         logger.info("message_sent chat_id=%s type=parse_error", settings.TELEGRAM_CHAT_ID)
         return True
 
     async def send_to_channel(self, message: str) -> bool:
-        await self.bot.send_message(chat_id=settings.TELEGRAM_CHANNEL_ID, text=message, parse_mode=ParseMode.MARKDOWN_V2)
+        await self.bot.send_message(chat_id=settings.TELEGRAM_CHANNEL_ID, text=message)
         logger.info("message_sent chat_id=%s type=channel", settings.TELEGRAM_CHANNEL_ID)
         return True

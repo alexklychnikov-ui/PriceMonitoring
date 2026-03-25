@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str
     TELEGRAM_CHAT_ID: str
     TELEGRAM_CHANNEL_ID: str = ""
+    FLOWER_USER: str = "admin"
+    FLOWER_PASSWORD: str = ""
     PROXY_LIST: list[str] = Field(default_factory=list)
     PARSE_INTERVAL_HOURS: int = 6
     PRICE_ALERT_THRESHOLD_PCT: float = 5.0

@@ -42,7 +42,7 @@ async def get_price_changes(days: int = 30) -> list[dict]:
             select(Alert.id, Alert.product_id, Alert.old_value, Alert.new_value, Alert.triggered_at, Product.name, Site.name)
             .join(Product, Product.id == Alert.product_id)
             .join(Site, Site.id == Product.site_id)
-            .where(Alert.alert_type.in_(["price_changed", "ai_threshold"]), Alert.triggered_at >= cutoff)
+            .where(Alert.alert_type.in_(["price_drop", "price_rise", "price_changed", "ai_threshold"]), Alert.triggered_at >= cutoff)
             .order_by(Alert.triggered_at.desc())
             .limit(200)
         )

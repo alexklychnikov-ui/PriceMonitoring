@@ -1,5 +1,6 @@
 .env
 .env.*
+deploy/.env*
 !.env.example
 !deploy/.env.prod.example
 
@@ -22,3 +23,5 @@ Documentation/
 
 .DS_Store
 Thumbs.db
+Documentation/
+work.md

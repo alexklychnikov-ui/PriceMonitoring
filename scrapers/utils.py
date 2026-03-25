@@ -64,7 +64,7 @@ def detect_season(name: str) -> str:
 
 
 async def get_random_ua() -> str:
-    return UserAgent().random
+    return UserAgent(os=["windows", "macos", "linux"]).random
 
 
 def split_brand_model(name: str) -> tuple[str, str]:

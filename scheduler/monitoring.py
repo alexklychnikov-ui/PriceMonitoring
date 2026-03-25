@@ -101,8 +101,10 @@ async def get_parse_stats(hours: int = 24) -> dict:
 
         changed_prices = int(
             await session.scalar(
-                select(func.count(Alert.id))
-                .where(Alert.alert_type == "price_changed", Alert.triggered_at >= window_start)
+                select(func.count(Alert.id)).where(
+                    Alert.alert_type.in_(["price_drop", "price_rise", "price_changed"]),
+                    Alert.triggered_at >= window_start,
+                )
             )
             or 0
         )
