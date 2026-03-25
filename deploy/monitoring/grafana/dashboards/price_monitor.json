@@ -1,0 +1,30 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "API Up",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "targets": []
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Price Changes (24h)",
+      "gridPos": {"h": 8, "w": 18, "x": 6, "y": 0},
+      "targets": []
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["price-monitor"],
+  "templating": {"list": []},
+  "time": {"from": "now-24h", "to": "now"},
+  "timezone": "browser",
+  "title": "Price Monitoring",
+  "version": 1
+}

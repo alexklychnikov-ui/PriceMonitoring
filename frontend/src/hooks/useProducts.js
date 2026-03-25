@@ -1,0 +1,22 @@
+import { useQuery } from "@tanstack/react-query";
+import { fetchProduct, fetchProductHistory, fetchProducts } from "../api/client";
+export function useProducts() {
+    return useQuery({
+        queryKey: ["products"],
+        queryFn: fetchProducts,
+    });
+}
+export function useProduct(id) {
+    return useQuery({
+        queryKey: ["product", id],
+        queryFn: () => fetchProduct(id),
+        enabled: Number.isFinite(id),
+    });
+}
+export function useProductHistory(id) {
+    return useQuery({
+        queryKey: ["product-history", id],
+        queryFn: () => fetchProductHistory(id),
+        enabled: Number.isFinite(id),
+    });
+}
