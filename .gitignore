@@ -18,6 +18,7 @@ logs/
 
 frontend/node_modules/
 frontend/dist/
+Documentation/
 
 .DS_Store
 Thumbs.db
