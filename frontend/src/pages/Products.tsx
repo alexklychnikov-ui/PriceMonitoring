@@ -5,6 +5,7 @@ import { useProducts } from "../hooks/useProducts";
 type ProductFilters = {
   name: string;
   brand: string;
+  season: "all" | "winter" | "summer";
   tireSize: string;
   radius: string;
   spike: "all" | "yes" | "no";
@@ -12,12 +13,13 @@ type ProductFilters = {
   maxPrice: string;
 };
 
-const STORAGE_KEY = "products-filters-v1";
+const STORAGE_KEY = "products-filters-v2";
 const PAGE_SIZE = 20;
 
 const EMPTY_FILTERS: ProductFilters = {
   name: "",
   brand: "",
+  season: "all",
   tireSize: "",
   radius: "",
   spike: "all",
@@ -39,6 +41,7 @@ function loadSavedFilters(): ProductFilters {
     return {
       name: parsed.name ?? "",
       brand: parsed.brand ?? "",
+      season: parsed.season === "winter" || parsed.season === "summer" ? parsed.season : "all",
       tireSize: parsed.tireSize ?? "",
       radius: parsed.radius ?? "",
       spike: parsed.spike === "yes" || parsed.spike === "no" ? parsed.spike : "all",
@@ -66,6 +69,16 @@ export function ProductsPage() {
     const brandNeedle = filters.brand.trim().toLowerCase();
     const tireSizeNeedle = filters.tireSize.trim().toLowerCase();
     const radiusNeedle = filters.radius.trim().toLowerCase();
+    const seasonMatchesFilter = (seasonValue: string | null | undefined) => {
+      if (filters.season === "all") {
+        return true;
+      }
+      const normalized = (seasonValue ?? "").trim().toLowerCase();
+      if (filters.season === "winter") {
+        return normalized === "зима" || normalized === "winter";
+      }
+      return normalized === "лето" || normalized === "summer";
+    };
     const minPrice = Number(filters.minPrice);
     const maxPrice = Number(filters.maxPrice);
     const hasMinPrice = filters.minPrice.trim() !== "" && !Number.isNaN(minPrice);
@@ -78,10 +91,11 @@ export function ProductsPage() {
       const radiusMatches = (item.radius ?? "").toLowerCase().includes(radiusNeedle);
       const spikeMatches =
         filters.spike === "all" || (filters.spike === "yes" && item.spike === true) || (filters.spike === "no" && item.spike === false);
+      const seasonMatches = seasonMatchesFilter(item.season);
       const price = item.current_price;
       const minPriceMatches = !hasMinPrice || (price != null && price >= minPrice);
       const maxPriceMatches = !hasMaxPrice || (price != null && price <= maxPrice);
-      return nameMatches && brandMatches && tireSizeMatches && radiusMatches && spikeMatches && minPriceMatches && maxPriceMatches;
+      return nameMatches && brandMatches && seasonMatches && tireSizeMatches && radiusMatches && spikeMatches && minPriceMatches && maxPriceMatches;
     });
   }, [data?.items, filters]);
 
@@ -131,6 +145,7 @@ export function ProductsPage() {
           <tr>
             <th align="left">Название</th>
             <th align="left">Бренд</th>
+            <th align="left">Сезон</th>
             <th align="left">Размер</th>
             <th align="left">Радиус</th>
             <th align="left">Шипы</th>
@@ -152,6 +167,20 @@ export function ProductsPage() {
                 placeholder="Фильтр бренда"
                 style={{ width: "100%" }}
               />
+            </th>
+            <th>
+              <select
+                value={filters.season}
+                onChange={(event) => {
+                  setFilters((prev) => ({ ...prev, season: event.target.value as ProductFilters["season"] }));
+                  setPage(1);
+                }}
+                style={{ width: "100%" }}
+              >
+                <option value="all">Все</option>
+                <option value="winter">Зима</option>
+                <option value="summer">Лето</option>
+              </select>
             </th>
             <th>
               <input
@@ -208,6 +237,7 @@ export function ProductsPage() {
             <tr key={row.id} onClick={() => navigate(`/products/${row.id}`)} style={{ cursor: "pointer" }}>
               <td>{row.name}</td>
               <td>{row.brand}</td>
+              <td>{row.season ?? "-"}</td>
               <td>{row.tire_size}</td>
               <td>{row.radius}</td>
               <td>{row.spike == null ? "-" : row.spike ? "Да" : "Нет"}</td>
@@ -216,7 +246,7 @@ export function ProductsPage() {
           ))}
           {pageItems.length === 0 && (
             <tr>
-              <td colSpan={6} style={{ paddingTop: 12 }}>
+              <td colSpan={7} style={{ paddingTop: 12 }}>
                 По выбранным фильтрам ничего не найдено.
               </td>
             </tr>

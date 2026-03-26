@@ -11,6 +11,17 @@ from config import settings
 from scrapers.schemas import ProductDTO
 
 
+def _normalize_season(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip().lower()
+    if normalized in {"winter", "зима"}:
+        return "Зима"
+    if normalized in {"summer", "лето"}:
+        return "Лето"
+    return None
+
+
 async def upsert_product(
     session: AsyncSession,
     dto: ProductDTO,
@@ -23,13 +34,22 @@ async def upsert_product(
 
     if product is None:
         # If external_id is new, try to merge duplicates by a stable key within a site.
-        # MVP key requested: (site_id, name, tire_size, diameter) without price.
-        dup_stmt = select(Product).where(
+        # Keep studded/non-studded and season as separate products to avoid
+        # false price jumps between different tire variants.
+        dup_filters = [
             Product.site_id == site_id,
             Product.name == dto.name,
+            Product.brand == dto.brand,
             Product.tire_size == dto.tire_size,
             Product.diameter == dto.diameter,
-        )
+            Product.season == _normalize_season(dto.season),
+        ]
+        if dto.spike is None:
+            dup_filters.append(Product.spike.is_(None))
+        else:
+            dup_filters.append(Product.spike == dto.spike)
+
+        dup_stmt = select(Product).where(*dup_filters)
         duplicate = await session.scalar(dup_stmt)
         if duplicate is not None:
             product = duplicate
@@ -41,7 +61,7 @@ async def upsert_product(
                 name=dto.name,
                 brand=dto.brand,
                 model=dto.model,
-                season=dto.season,
+                season=_normalize_season(dto.season),
                 spike=dto.spike,
                 tire_size=dto.tire_size,
                 radius=dto.radius,
@@ -56,7 +76,7 @@ async def upsert_product(
         product.name = dto.name
         product.brand = dto.brand
         product.model = dto.model
-        product.season = dto.season
+        product.season = _normalize_season(dto.season)
         product.spike = dto.spike
         product.tire_size = dto.tire_size
         product.radius = dto.radius
