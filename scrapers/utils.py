@@ -68,12 +68,31 @@ async def get_random_ua() -> str:
 
 
 def split_brand_model(name: str) -> tuple[str, str]:
-    tokens = name.strip().split()
+    normalized = re.sub(r"\s+", " ", name).strip()
+    if not normalized:
+        return "Unknown", "Unknown"
+
+    normalized = re.sub(r"^(легковая|грузовая)\s+шина\s+", "", normalized, flags=re.IGNORECASE)
+    tokens = normalized.split()
     if not tokens:
         return "Unknown", "Unknown"
-    if len(tokens) == 1:
-        return tokens[0], "Unknown"
-    return tokens[0], tokens[1]
+
+    service_tokens = {"шина", "автошина", "легковая", "грузовая"}
+    idx = 0
+    while idx < len(tokens) and tokens[idx].lower().strip(".,:;()[]") in service_tokens:
+        idx += 1
+
+    if idx >= len(tokens):
+        return "Unknown", "Unknown"
+
+    brand = tokens[idx]
+    if brand.lower() == "н.камск" and idx + 1 < len(tokens):
+        brand = tokens[idx + 1]
+        idx += 1
+
+    model_tokens = tokens[idx + 1 :]
+    model = " ".join(model_tokens) if model_tokens else "Unknown"
+    return brand, model
 
 
 def build_external_id(site_name: str, name: str, url: str) -> str:

@@ -134,12 +134,20 @@ class RecommendationEngine:
 
         week = datetime.now(timezone.utc).strftime("%Y-%W")
         async with AsyncSessionLocal() as session:
-            sites_count = int(await session.scalar(select(func.count(Site.id))) or 0)
-            products_count = int(await session.scalar(select(func.count(Product.id))) or 0)
+            sites_count = int(await session.scalar(select(func.count(Site.id)).where(Site.is_active.is_(True))) or 0)
+            products_count = int(
+                await session.scalar(
+                    select(func.count(Product.id)).join(Site, Site.id == Product.site_id).where(Site.is_active.is_(True))
+                )
+                or 0
+            )
             since = datetime.now(timezone.utc) - timedelta(days=7)
             price_changes = int(
                 await session.scalar(
                     select(func.count(Alert.id)).where(
+                        Alert.product_id.in_(
+                            select(Product.id).join(Site, Site.id == Product.site_id).where(Site.is_active.is_(True))
+                        ),
                         Alert.alert_type.in_(["price_drop", "price_rise", "price_changed"]),
                         Alert.triggered_at >= since,
                     )

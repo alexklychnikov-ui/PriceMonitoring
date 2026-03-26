@@ -48,12 +48,14 @@ async def _find_products(brand: str, model: str, size: str) -> list[Product]:
     async with AsyncSessionLocal() as session:
         stmt = (
             select(Product)
+            .join(Site, Site.id == Product.site_id)
             .where(
                 and_(
                     Product.brand.ilike(f"%{brand}%"),
                     Product.model.ilike(f"%{model}%"),
                     Product.tire_size == tire_size,
                     Product.radius == radius,
+                    Site.is_active.is_(True),
                 )
             )
             .order_by(Product.id.asc())

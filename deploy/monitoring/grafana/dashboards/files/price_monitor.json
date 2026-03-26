@@ -1,0 +1,353 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "red", "value": 80}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*)::bigint AS value FROM products",
+          "refId": "A"
+        }
+      ],
+      "title": "Товаров в БД",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "blue", "value": null},
+              {"color": "orange", "value": 1}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*)::bigint AS value\nFROM alerts a\nJOIN products p ON p.id = a.product_id\nJOIN sites s ON s.id = p.site_id\nWHERE a.sent_at IS NULL\n  AND a.alert_type IN ('price_drop','price_rise','price_changed','new_low')\n  AND s.is_active = true",
+          "refId": "A"
+        }
+      ],
+      "title": "Алерты не отправлены",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "purple", "value": null}]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*)::bigint AS value\nFROM alerts a\nJOIN products p ON p.id = a.product_id\nJOIN sites s ON s.id = p.site_id\nWHERE a.triggered_at >= NOW() - INTERVAL '24 hours'\n  AND a.alert_type IN ('price_drop','price_rise','price_changed','new_low')\n  AND s.is_active = true",
+          "refId": "A"
+        }
+      ],
+      "title": "Алерты за 24ч",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "semi-dark-green", "value": null}]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*)::bigint AS value\nFROM parse_runs pr\nJOIN sites s ON s.id = pr.site_id\nWHERE pr.started_at >= NOW() - INTERVAL '24 hours'\n  AND s.is_active = true\n  AND pr.trigger_type = 'manual'",
+          "refId": "A"
+        }
+      ],
+      "title": "Запуски парсинга за 24ч",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "green", "value": null}]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 4},
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "started_at"}]
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT s.name AS site, pr.status, pr.trigger_type, pr.started_at, pr.finished_at, pr.products_found, pr.errors_count\nFROM parse_runs pr\nJOIN sites s ON s.id = pr.site_id\nWHERE s.is_active = true\n  AND pr.trigger_type = 'manual'\nORDER BY pr.started_at DESC\nLIMIT 100",
+          "refId": "A"
+        }
+      ],
+      "title": "Последние запуски парсинга",
+      "type": "table"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {"type": "linear"},
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {"group": "A", "mode": "none"},
+            "thresholdsStyle": {"mode": "off"}
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "green", "value": null}]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 14},
+      "id": 6,
+      "options": {
+        "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "single", "sort": "none"}
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  date_trunc('hour', a.triggered_at) AS \"time\",\n  COUNT(*)::double precision AS alerts\nFROM alerts a\nJOIN products p ON p.id = a.product_id\nJOIN sites s ON s.id = p.site_id\nWHERE a.triggered_at >= NOW() - INTERVAL '7 days'\n  AND a.alert_type IN ('price_drop','price_rise','price_changed','new_low')\n  AND s.is_active = true\nGROUP BY 1\nORDER BY 1",
+          "refId": "A"
+        }
+      ],
+      "title": "Алерты по часам (7 дней)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "green", "value": null}]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 23},
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "products"}]
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT s.name AS site, COUNT(p.id)::bigint AS products\nFROM sites s\nLEFT JOIN products p ON p.site_id = s.id\nGROUP BY s.id, s.name\nORDER BY products DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Товаров по сайтам",
+      "type": "table"
+    },
+    {
+      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "fieldConfig": {
+        "defaults": {
+          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "green", "value": null}]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 23},
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "showHeader": true,
+        "sortBy": [{"desc": true, "displayName": "cnt"}]
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT a.alert_type, COUNT(*)::bigint AS cnt\nFROM alerts a\nJOIN products p ON p.id = a.product_id\nJOIN sites s ON s.id = p.site_id\nWHERE a.triggered_at >= NOW() - INTERVAL '7 days'\n  AND a.alert_type IN ('price_drop','price_rise','price_changed','new_low')\n  AND s.is_active = true\nGROUP BY a.alert_type\nORDER BY cnt DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Алерты по типу (7 дней)",
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["price-monitor", "postgresql"],
+  "templating": {"list": []},
+  "time": {"from": "now-7d", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Price Monitoring",
+  "uid": "price-monitor-db",
+  "version": 1,
+  "weekStart": ""
+}

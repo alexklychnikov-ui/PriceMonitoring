@@ -9,6 +9,7 @@ class ProductDTO(BaseModel):
     brand: str
     model: str
     season: str
+    spike: bool | None = None
     tire_size: str
     radius: str
     width: int

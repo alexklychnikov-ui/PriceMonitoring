@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { PriceHistory, Product, Site } from "../types";
+import type { ParsingStatus, PriceHistory, Product, RuntimeSettings, Site } from "../types";
 
 export const api = axios.create({
   baseURL: "/api",
@@ -37,5 +37,37 @@ export async function fetchBestDeals(): Promise<Array<Record<string, unknown>>> 
 
 export async function fetchSitesSettings(): Promise<Site[]> {
   const { data } = await api.get("/settings/sites");
+  return data;
+}
+
+export async function updateSiteStatus(siteId: number, isActive: boolean): Promise<{ ok: boolean; id: number; is_active: boolean }> {
+  const { data } = await api.put(`/settings/sites/${siteId}`, { is_active: isActive });
+  return data;
+}
+
+export async function updateSitesBulkStatus(
+  items: Array<{ id: number; is_active: boolean }>,
+): Promise<{ ok: boolean; updated: number; items: Array<{ id: number; is_active: boolean }> }> {
+  const { data } = await api.put("/settings/sites", { items });
+  return data;
+}
+
+export async function fetchRuntimeSettings(): Promise<RuntimeSettings> {
+  const { data } = await api.get("/settings/runtime");
+  return data;
+}
+
+export async function updateRuntimeSettings(payload: Partial<RuntimeSettings>): Promise<RuntimeSettings> {
+  const { data } = await api.put("/settings/runtime", payload);
+  return data;
+}
+
+export async function fetchParsingStatus(): Promise<ParsingStatus> {
+  const { data } = await api.get("/settings/parsing-status");
+  return data;
+}
+
+export async function triggerScrapeNow(): Promise<{ ok: boolean; sites_count: number; sites: string[]; task_id: string }> {
+  const { data } = await api.post("/settings/scrape-now");
   return data;
 }

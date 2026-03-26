@@ -1,0 +1,11 @@
+apiVersion: 1
+providers:
+  - name: price-monitor
+    orgId: 1
+    folder: Price Monitor
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards/files

@@ -11,7 +11,12 @@ from config import settings
 from scrapers.schemas import ProductDTO
 
 
-async def upsert_product(session: AsyncSession, dto: ProductDTO, site_id: int) -> Product:
+async def upsert_product(
+    session: AsyncSession,
+    dto: ProductDTO,
+    site_id: int,
+    alert_threshold_pct: Decimal | None = None,
+) -> Product:
     stmt = select(Product).where(Product.site_id == site_id, Product.external_id == dto.external_id)
     product = await session.scalar(stmt)
     is_duplicate = False
@@ -37,6 +42,7 @@ async def upsert_product(session: AsyncSession, dto: ProductDTO, site_id: int) -
                 brand=dto.brand,
                 model=dto.model,
                 season=dto.season,
+                spike=dto.spike,
                 tire_size=dto.tire_size,
                 radius=dto.radius,
                 width=dto.width,
@@ -51,6 +57,7 @@ async def upsert_product(session: AsyncSession, dto: ProductDTO, site_id: int) -
         product.brand = dto.brand
         product.model = dto.model
         product.season = dto.season
+        product.spike = dto.spike
         product.tire_size = dto.tire_size
         product.radius = dto.radius
         product.width = dto.width
@@ -87,7 +94,11 @@ async def upsert_product(session: AsyncSession, dto: ProductDTO, site_id: int) -
     session.add(history)
 
     if latest_price is not None and latest_price.price != new_price:
-        threshold_pct = Decimal(str(settings.PRICE_ALERT_THRESHOLD_PCT))
+        threshold_pct = (
+            alert_threshold_pct
+            if alert_threshold_pct is not None
+            else Decimal(str(settings.PRICE_ALERT_THRESHOLD_PCT))
+        )
         if latest_price.price != 0:
             change_pct = (abs(new_price - latest_price.price) / latest_price.price) * Decimal("100")
         else:
@@ -106,3 +117,42 @@ async def upsert_product(session: AsyncSession, dto: ProductDTO, site_id: int) -
 
     await session.flush()
     return product
+
+
+async def mark_missing_products_out_of_stock(session: AsyncSession, site_id: int, seen_external_ids: set[str]) -> int:
+    if not seen_external_ids:
+        return 0
+
+    products = list(await session.scalars(select(Product).where(Product.site_id == site_id)))
+    marked = 0
+    now = datetime.now(timezone.utc)
+
+    for product in products:
+        if product.external_id in seen_external_ids:
+            continue
+
+        latest_price = await session.scalar(
+            select(PriceHistory)
+            .where(PriceHistory.product_id == product.id)
+            .order_by(PriceHistory.scraped_at.desc())
+            .limit(1)
+        )
+        if latest_price is None:
+            continue
+        if latest_price.in_stock is False:
+            continue
+
+        session.add(
+            PriceHistory(
+                product_id=product.id,
+                price=latest_price.price,
+                old_price=latest_price.price,
+                discount_pct=None,
+                in_stock=False,
+                scraped_at=now,
+            )
+        )
+        marked += 1
+
+    await session.flush()
+    return marked

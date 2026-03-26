@@ -10,7 +10,7 @@ from scrapers.ship_ship import ShipShipScraper
 from scrapers.shinapoint import ShinapointScraper
 from scrapers.shinservice import ShinserviceScraper
 from scrapers.supershina38 import Supershina38Scraper
-from scrapers.utils import clean_price, parse_tire_size
+from scrapers.utils import clean_price, parse_tire_size, split_brand_model
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -40,6 +40,18 @@ def test_clean_price_edges():
     assert clean_price("17,840 ₽") == 17840.0
     assert clean_price("") is None
     assert clean_price("N/A") is None
+
+
+def test_split_brand_model_with_shina_prefix():
+    brand, model = split_brand_model("Легковая шина Н.Камск Кама Евро 519 185/60 R14 82T")
+    assert brand == "Кама"
+    assert model.startswith("Евро 519")
+
+
+def test_split_brand_model_regular_brand():
+    brand, model = split_brand_model("Легковая шина Pirelli Scorpion Ice Zero 2 225/55 R19")
+    assert brand == "Pirelli"
+    assert model.startswith("Scorpion Ice Zero 2")
 
 
 def test_avtoshina_parse_products():

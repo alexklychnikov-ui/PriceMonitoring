@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 
 from config import settings
 from db.database import AsyncSessionLocal
-from db.models import Alert, ParseRun, Site
+from db.models import Alert, ParseRun, Product, Site
 from scheduler.celery_app import app as celery_app
 
 
@@ -32,7 +32,19 @@ async def get_system_status() -> dict:
         db_ok = True
         try:
             await session.execute(select(func.now()))
-            pending_alerts = int(await session.scalar(select(func.count(Alert.id)).where(Alert.sent_at.is_(None))) or 0)
+            pending_alerts = int(
+                await session.scalar(
+                    select(func.count(Alert.id))
+                    .join(Product, Product.id == Alert.product_id)
+                    .join(Site, Site.id == Product.site_id)
+                    .where(
+                        Alert.sent_at.is_(None),
+                        Alert.alert_type.in_(["price_drop", "price_rise", "price_changed", "new_low"]),
+                        Site.is_active.is_(True),
+                    )
+                )
+                or 0
+            )
             site_rows = list(await session.scalars(select(Site)))
             for site in site_rows:
                 row = await session.scalar(
@@ -77,7 +89,18 @@ async def get_parse_stats(hours: int = 24) -> dict:
     window_start = datetime.now(timezone.utc) - timedelta(hours=hours)
     async with AsyncSessionLocal() as session:
         try:
-            rows = list(await session.scalars(select(ParseRun).where(ParseRun.started_at >= window_start)))
+            active_site_ids = list(await session.scalars(select(Site.id).where(Site.is_active.is_(True))))
+            rows = []
+            if active_site_ids:
+                rows = list(
+                    await session.scalars(
+                        select(ParseRun).where(
+                            ParseRun.started_at >= window_start,
+                            ParseRun.site_id.in_(active_site_ids),
+                            ParseRun.trigger_type == "manual",
+                        )
+                    )
+                )
         except Exception:
             return {
                 "period_hours": hours,
@@ -101,9 +124,13 @@ async def get_parse_stats(hours: int = 24) -> dict:
 
         changed_prices = int(
             await session.scalar(
-                select(func.count(Alert.id)).where(
-                    Alert.alert_type.in_(["price_drop", "price_rise", "price_changed"]),
+                select(func.count(Alert.id))
+                .join(Product, Product.id == Alert.product_id)
+                .join(Site, Site.id == Product.site_id)
+                .where(
+                    Alert.alert_type.in_(["price_drop", "price_rise", "price_changed", "new_low"]),
                     Alert.triggered_at >= window_start,
+                    Site.is_active.is_(True),
                 )
             )
             or 0

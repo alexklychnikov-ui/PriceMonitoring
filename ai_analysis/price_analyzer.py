@@ -34,7 +34,7 @@ class PriceAnalyzer:
             )
             .join(Product, Product.id == PriceHistory.product_id)
             .join(Site, Site.id == Product.site_id)
-            .where(PriceHistory.scraped_at >= cutoff)
+            .where(PriceHistory.scraped_at >= cutoff, Site.is_active.is_(True))
             .order_by(PriceHistory.scraped_at.asc())
         )
         if product_id is not None:

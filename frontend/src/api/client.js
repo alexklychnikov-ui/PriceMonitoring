@@ -30,3 +30,27 @@ export async function fetchSitesSettings() {
     const { data } = await api.get("/settings/sites");
     return data;
 }
+export async function updateSiteStatus(siteId, isActive) {
+    const { data } = await api.put(`/settings/sites/${siteId}`, { is_active: isActive });
+    return data;
+}
+export async function updateSitesBulkStatus(items) {
+    const { data } = await api.put("/settings/sites", { items });
+    return data;
+}
+export async function fetchRuntimeSettings() {
+    const { data } = await api.get("/settings/runtime");
+    return data;
+}
+export async function updateRuntimeSettings(payload) {
+    const { data } = await api.put("/settings/runtime", payload);
+    return data;
+}
+export async function fetchParsingStatus() {
+    const { data } = await api.get("/settings/parsing-status");
+    return data;
+}
+export async function triggerScrapeNow() {
+    const { data } = await api.post("/settings/scrape-now");
+    return data;
+}

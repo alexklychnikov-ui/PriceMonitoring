@@ -18,7 +18,7 @@ class Avtoshina38Scraper(BaseScraper):
     site_name = "avtoshina38"
     base_url = "https://avtoshina38.ru"
     catalog_url = "https://avtoshina38.ru/catalog/tires/"
-    max_pages = 15
+    max_pages = 30
 
     async def _get_session_cookies(self) -> dict[str, str]:
         try:

@@ -1,18 +1,11 @@
+from datetime import timedelta
+
 from celery.schedules import crontab
 
-from config import settings
-
-
 CELERYBEAT_SCHEDULE = {
-    "scrape-express-shina-daily-02-00": {
-        "task": "scheduler.tasks.scrape_site",
-        "schedule": crontab(minute=0, hour=10),
-        "args": ("express_shina",),
-    },
-    "scrape-kolesa-darom-daily-02-00": {
-        "task": "scheduler.tasks.scrape_site",
-        "schedule": crontab(minute=0, hour=10),
-        "args": ("kolesa_darom",),
+    "scrape-all-sites-hourly-check": {
+        "task": "scheduler.tasks.scrape_all_sites",
+        "schedule": timedelta(hours=1),
     },
     "send-alerts-every-5-min": {
         "task": "scheduler.tasks.send_pending_alerts",

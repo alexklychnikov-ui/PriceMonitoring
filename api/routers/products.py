@@ -35,7 +35,7 @@ async def get_products(
     radius: str | None = None,
     sort_order: str = "asc",
     page: int = 1,
-    page_size: int = 50,
+    page_size: int | None = None,
 ) -> dict:
     price_subq = (
         select(
@@ -93,6 +93,7 @@ async def get_products(
                     brand=product.brand,
                     model=product.model,
                     season=product.season,
+                    spike=product.spike,
                     tire_size=product.tire_size,
                     radius=product.radius,
                     width=product.width,
@@ -113,6 +114,9 @@ async def get_products(
             items.sort(key=lambda x: x.get("current_price") or 0, reverse=reverse)
 
         total = len(items)
+        if page_size is None or page_size <= 0:
+            return {"items": items, "total": total, "page": 1, "page_size": total}
+
         start = max(page - 1, 0) * page_size
         end = start + page_size
         return {"items": items[start:end], "total": total, "page": page, "page_size": page_size}
@@ -147,6 +151,7 @@ async def get_product(product_id: int) -> dict:
             brand=product.brand,
             model=product.model,
             season=product.season,
+            spike=product.spike,
             tire_size=product.tire_size,
             radius=product.radius,
             width=product.width,
