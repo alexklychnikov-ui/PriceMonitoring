@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -20,36 +23,61 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "datasource": {
+        "type": "postgres",
+        "uid": "priceMonitor"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "red", "value": 80}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "10.4.3",
       "targets": [
         {
-          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "datasource": {
+            "type": "postgres",
+            "uid": "priceMonitor"
+          },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
@@ -61,36 +89,61 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "datasource": {
+        "type": "postgres",
+        "uid": "priceMonitor"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "blue", "value": null},
-              {"color": "orange", "value": 1}
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
             ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
       "id": 2,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "10.4.3",
       "targets": [
         {
-          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "datasource": {
+            "type": "postgres",
+            "uid": "priceMonitor"
+          },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
@@ -102,33 +155,57 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "datasource": {
+        "type": "postgres",
+        "uid": "priceMonitor"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [{"color": "purple", "value": null}]
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
       "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "10.4.3",
       "targets": [
         {
-          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "datasource": {
+            "type": "postgres",
+            "uid": "priceMonitor"
+          },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
@@ -140,37 +217,61 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "datasource": {
+        "type": "postgres",
+        "uid": "priceMonitor"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [{"color": "semi-dark-green", "value": null}]
+            "steps": [
+              {
+                "color": "semi-dark-green",
+                "value": null
+              }
+            ]
           },
           "unit": "short"
         },
         "overrides": []
       },
-      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
       "id": 4,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "10.4.3",
       "targets": [
         {
-          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "datasource": {
+            "type": "postgres",
+            "uid": "priceMonitor"
+          },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT COUNT(*)::bigint AS value\nFROM parse_runs pr\nJOIN sites s ON s.id = pr.site_id\nWHERE pr.started_at >= NOW() - INTERVAL '24 hours'\n  AND s.is_active = true\n  AND pr.trigger_type = 'manual'",
+          "rawSql": "SELECT COUNT(*)::bigint AS value\nFROM parse_runs pr\nJOIN sites s ON s.id = pr.site_id\nWHERE pr.started_at >= NOW() - INTERVAL '24 hours'\n  AND s.is_active = true",
           "refId": "A"
         }
       ],
@@ -178,34 +279,68 @@
       "type": "stat"
     },
     {
-      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "datasource": {
+        "type": "postgres",
+        "uid": "priceMonitor"
+      },
       "fieldConfig": {
         "defaults": {
-          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false},
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [{"color": "green", "value": null}]
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
           }
         },
         "overrides": []
       },
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 4},
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
       "id": 5,
       "options": {
         "cellHeight": "sm",
-        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{"desc": true, "displayName": "started_at"}]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "started_at"
+          }
+        ]
       },
       "pluginVersion": "10.4.3",
       "targets": [
         {
-          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "datasource": {
+            "type": "postgres",
+            "uid": "priceMonitor"
+          },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT s.name AS site, pr.status, pr.trigger_type, pr.started_at, pr.finished_at, pr.products_found, pr.errors_count\nFROM parse_runs pr\nJOIN sites s ON s.id = pr.site_id\nWHERE s.is_active = true\n  AND pr.trigger_type = 'manual'\nORDER BY pr.started_at DESC\nLIMIT 100",
+          "rawSql": "SELECT s.name AS site, pr.status, pr.trigger_type, pr.started_at, pr.finished_at, pr.products_found, pr.errors_count\nFROM parse_runs pr\nJOIN sites s ON s.id = pr.site_id\nWHERE s.is_active = true\nORDER BY pr.started_at DESC\nLIMIT 100",
           "refId": "A"
         }
       ],
@@ -213,10 +348,15 @@
       "type": "table"
     },
     {
-      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "datasource": {
+        "type": "postgres",
+        "uid": "priceMonitor"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -227,125 +367,256 @@
             "drawStyle": "bars",
             "fillOpacity": 80,
             "gradientMode": "none",
-            "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
-            "scaleDistribution": {"type": "linear"},
-            "showPoints": "auto",
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
             "spanNulls": false,
-            "stacking": {"group": "A", "mode": "none"},
-            "thresholdsStyle": {"mode": "off"}
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [{"color": "green", "value": null}]
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
           },
-          "unit": "short"
+          "unit": "percent"
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 14},
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
       "id": 6,
       "options": {
-        "legend": {"calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true},
-        "tooltip": {"mode": "single", "sort": "none"}
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.4.3",
       "targets": [
         {
-          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "datasource": {
+            "type": "postgres",
+            "uid": "priceMonitor"
+          },
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  date_trunc('hour', a.triggered_at) AS \"time\",\n  COUNT(*)::double precision AS alerts\nFROM alerts a\nJOIN products p ON p.id = a.product_id\nJOIN sites s ON s.id = p.site_id\nWHERE a.triggered_at >= NOW() - INTERVAL '7 days'\n  AND a.alert_type IN ('price_drop','price_rise','price_changed','new_low')\n  AND s.is_active = true\nGROUP BY 1\nORDER BY 1",
+          "rawSql": "WITH cfg AS (\n  SELECT CASE WHEN EXTRACT(MONTH FROM NOW()) BETWEEN 3 AND 9 THEN 'Лето' ELSE 'Зима' END AS season_now\n),\nraw_rows AS (\n  SELECT\n    ph.product_id,\n    ph.scraped_at,\n    ph.price,\n    p.diameter,\n    ((date_trunc('day', (ph.scraped_at AT TIME ZONE 'Asia/Irkutsk'))) AT TIME ZONE 'Asia/Irkutsk') AS day\n  FROM price_history ph\n  JOIN products p ON p.id = ph.product_id\n  JOIN sites s ON s.id = p.site_id\n  CROSS JOIN cfg c\n  WHERE ph.scraped_at >= $__timeFrom()::timestamptz - INTERVAL '14 days'\n    AND ph.scraped_at <= $__timeTo()::timestamptz\n    AND ph.in_stock = true\n    AND s.is_active = true\n    AND (p.season = c.season_now OR p.season IS NULL)\n    AND ('${brand}' = '__all' OR COALESCE(p.brand, 'Unknown') = '${brand}')\n),\ndaily_latest AS (\n  SELECT DISTINCT ON (product_id, day)\n    product_id,\n    day,\n    price,\n    diameter\n  FROM raw_rows\n  ORDER BY product_id, day, scraped_at DESC\n),\nwith_lag AS (\n  SELECT\n    product_id,\n    day,\n    price,\n    diameter,\n    LAG(price) OVER (PARTITION BY product_id ORDER BY day) AS ref_price\n  FROM daily_latest\n),\ntop_diameters AS (\n  SELECT COALESCE(diameter::text, '?') AS d\n  FROM daily_latest\n  WHERE day < $__timeTo()::timestamptz\n    AND day + INTERVAL '1 day' > $__timeFrom()::timestamptz\n  GROUP BY 1\n  ORDER BY COUNT(*) DESC\n  LIMIT 5\n),\nbase AS (\n  SELECT *\n  FROM with_lag\n  WHERE day < $__timeTo()::timestamptz\n    AND day + INTERVAL '1 day' > $__timeFrom()::timestamptz\n),\ncombined AS (\n  SELECT\n    (b.day + INTERVAL '12 hours') AS \"time\",\n    CONCAT('R', COALESCE(b.diameter::text, '?')) AS metric,\n    CASE\n      WHEN SUM(CASE WHEN b.ref_price IS NOT NULL THEN 1 ELSE 0 END) = 0 THEN NULL::double precision\n      ELSE (\n        ROUND(\n          (\n            100.0 * SUM(CASE WHEN b.ref_price IS NOT NULL AND b.price < b.ref_price THEN 1 ELSE 0 END)::numeric\n            / NULLIF(SUM(CASE WHEN b.ref_price IS NOT NULL THEN 1 ELSE 0 END), 0)::numeric\n          ),\n          2\n        )\n      )::double precision\n    END AS value\n  FROM base b\n  WHERE COALESCE(b.diameter::text, '?') IN (SELECT td.d FROM top_diameters td)\n  GROUP BY 1, 2\n\n  UNION ALL\n\n  SELECT\n    (b.day + INTERVAL '12 hours') AS \"time\",\n    'Все диаметры' AS metric,\n    CASE\n      WHEN SUM(CASE WHEN b.ref_price IS NOT NULL THEN 1 ELSE 0 END) = 0 THEN NULL::double precision\n      ELSE (\n        ROUND(\n          (\n            100.0 * SUM(CASE WHEN b.ref_price IS NOT NULL AND b.price < b.ref_price THEN 1 ELSE 0 END)::numeric\n            / NULLIF(SUM(CASE WHEN b.ref_price IS NOT NULL THEN 1 ELSE 0 END), 0)::numeric\n          ),\n          2\n        )\n      )::double precision\n    END AS value\n  FROM base b\n  GROUP BY 1\n)\nSELECT \"time\", metric, value FROM combined\nWHERE value IS NOT NULL\nUNION ALL\nSELECT $__timeTo()::timestamptz AS \"time\",\n       'Нет данных в выбранном диапазоне' AS metric,\n       0::double precision AS value\nWHERE NOT EXISTS (SELECT 1 FROM combined WHERE combined.value IS NOT NULL LIMIT 1)\nORDER BY 1, 2",
           "refId": "A"
         }
       ],
-      "title": "Алерты по часам (7 дней)",
-      "type": "timeseries"
+      "title": "Доля снижений к пред. дню с данными (топ-5 R + общий) %",
+      "type": "timeseries",
+      "description": "Быстрый расчёт: эталон = цена в **предыдущий календарный день, где есть парсинг** (LAG по day), без тяжёлых подзапросов. Доля = снижений / товаров с эталоном. Ось X — дни (Asia/Irkutsk). Диапазон: Last 7–30 days."
     },
     {
-      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "datasource": {
+        "type": "postgres",
+        "uid": "priceMonitor"
+      },
       "fieldConfig": {
         "defaults": {
-          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false},
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [{"color": "green", "value": null}]
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
           }
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 23},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
       "id": 7,
       "options": {
         "cellHeight": "sm",
-        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{"desc": true, "displayName": "products"}]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "ср_абс_изм_%"
+          }
+        ]
       },
       "pluginVersion": "10.4.3",
       "targets": [
         {
-          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "datasource": {
+            "type": "postgres",
+            "uid": "priceMonitor"
+          },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT s.name AS site, COUNT(p.id)::bigint AS products\nFROM sites s\nLEFT JOIN products p ON p.site_id = s.id\nGROUP BY s.id, s.name\nORDER BY products DESC",
+          "rawSql": "WITH cfg AS (\n  SELECT CASE WHEN EXTRACT(MONTH FROM NOW()) BETWEEN 3 AND 9 THEN 'Лето' ELSE 'Зима' END AS season_now\n),\nranked AS (\n  SELECT\n    ph.product_id,\n    ph.scraped_at,\n    ph.price,\n    LAG(ph.price) OVER (PARTITION BY ph.product_id ORDER BY ph.scraped_at) AS prev_price\n  FROM price_history ph\n),\nchanges AS (\n  SELECT\n    p.id AS product_id,\n    COALESCE(p.brand, 'Unknown') AS brand,\n    100.0 * (r.price - r.prev_price) / NULLIF(r.prev_price, 0) AS pct_change\n  FROM ranked r\n  JOIN products p ON p.id = r.product_id\n  JOIN sites s ON s.id = p.site_id\n  CROSS JOIN cfg c\n  WHERE r.scraped_at >= NOW() - INTERVAL '7 days'\n    AND r.prev_price IS NOT NULL\n    AND r.price <> r.prev_price\n    AND s.is_active = true\n    AND (p.season = c.season_now OR p.season IS NULL)\n    AND ('${brand}' = '__all' OR COALESCE(p.brand, 'Unknown') = '${brand}')\n),\nmain AS (\n  SELECT\n    brand AS \"бренд\",\n    COUNT(*)::bigint AS \"события\",\n    COUNT(DISTINCT product_id)::bigint AS \"товаров_затронуто\",\n    ROUND(AVG(ABS(pct_change))::numeric, 2) AS \"ср_абс_изм_%\",\n    ROUND(percentile_cont(0.5) WITHIN GROUP (ORDER BY ABS(pct_change))::numeric, 2) AS \"медиана_абс_изм_%\",\n    ROUND(100.0 * SUM(CASE WHEN pct_change < 0 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 2) AS \"доля_снижений_%\",\n    ROUND(100.0 * SUM(CASE WHEN pct_change > 0 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 2) AS \"доля_роста_%\"\n  FROM changes\n  GROUP BY brand\n  HAVING COUNT(*) >= 1\n  ORDER BY 4 DESC\n  LIMIT 30\n)\nSELECT * FROM main\nUNION ALL\nSELECT\n  'Нет изменений цен (7 дн.)'::text,\n  0::bigint,\n  0::bigint,\n  0::numeric,\n  0::numeric,\n  0::numeric,\n  0::numeric\nWHERE NOT EXISTS (SELECT 1 FROM main LIMIT 1)",
           "refId": "A"
         }
       ],
-      "title": "Товаров по сайтам",
+      "title": "Волатильность цен по брендам (сезон мар–сен, 7 дней)",
       "type": "table"
     },
     {
-      "datasource": {"type": "postgres", "uid": "priceMonitor"},
+      "datasource": {
+        "type": "postgres",
+        "uid": "priceMonitor"
+      },
       "fieldConfig": {
         "defaults": {
-          "custom": {"align": "auto", "cellOptions": {"type": "auto"}, "inspect": false},
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [{"color": "green", "value": null}]
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
           }
         },
         "overrides": []
       },
-      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 23},
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
       "id": 8,
       "options": {
         "cellHeight": "sm",
-        "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": false},
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{"desc": true, "displayName": "cnt"}]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "доля_снижений_%"
+          }
+        ]
       },
       "pluginVersion": "10.4.3",
       "targets": [
         {
-          "datasource": {"type": "postgres", "uid": "priceMonitor"},
+          "datasource": {
+            "type": "postgres",
+            "uid": "priceMonitor"
+          },
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT a.alert_type, COUNT(*)::bigint AS cnt\nFROM alerts a\nJOIN products p ON p.id = a.product_id\nJOIN sites s ON s.id = p.site_id\nWHERE a.triggered_at >= NOW() - INTERVAL '7 days'\n  AND a.alert_type IN ('price_drop','price_rise','price_changed','new_low')\n  AND s.is_active = true\nGROUP BY a.alert_type\nORDER BY cnt DESC",
+          "rawSql": "WITH cfg AS (\n  SELECT CASE WHEN EXTRACT(MONTH FROM NOW()) BETWEEN 3 AND 9 THEN 'Лето' ELSE 'Зима' END AS season_now\n),\nlatest_now AS (\n  SELECT DISTINCT ON (ph.product_id)\n    ph.product_id,\n    ph.price AS price_now,\n    ph.scraped_at AS last_scraped\n  FROM price_history ph\n  JOIN products p ON p.id = ph.product_id\n  JOIN sites s ON s.id = p.site_id\n  CROSS JOIN cfg c\n  WHERE s.is_active = true\n    AND ph.in_stock = true\n    AND (p.season = c.season_now OR p.season IS NULL)\n    AND ('${brand}' = '__all' OR COALESCE(p.brand, 'Unknown') = '${brand}')\n  ORDER BY ph.product_id, ph.scraped_at DESC\n),\npriced AS (\n  SELECT\n    ln.product_id,\n    ln.price_now,\n    COALESCE(\n      (\n        SELECT ph2.price\n        FROM price_history ph2\n        WHERE ph2.product_id = ln.product_id\n          AND ph2.scraped_at <= NOW() - INTERVAL '7 days'\n        ORDER BY ph2.scraped_at DESC\n        LIMIT 1\n      ),\n      (\n        SELECT ph2.price\n        FROM price_history ph2\n        WHERE ph2.product_id = ln.product_id\n          AND ph2.scraped_at <= NOW() - INTERVAL '2 days'\n        ORDER BY ph2.scraped_at DESC\n        LIMIT 1\n      ),\n      (\n        SELECT ph2.price\n        FROM price_history ph2\n        WHERE ph2.product_id = ln.product_id\n          AND ph2.scraped_at < ln.last_scraped\n        ORDER BY ph2.scraped_at DESC\n        LIMIT 1\n      )\n    ) AS price_ref\n  FROM latest_now ln\n),\nmain AS (\n  SELECT\n    CONCAT(COALESCE(p.tire_size, '?'), ' R', COALESCE(p.diameter::text, '?')) AS \"размер\",\n    CONCAT('R', COALESCE(p.diameter::text, '?')) AS \"диаметр\",\n    COALESCE(p.brand, 'Unknown') AS \"бренд\",\n    COUNT(*)::bigint AS \"товаров\",\n    ROUND(AVG(pr.price_now)::numeric, 0) AS \"ср_цена_сейчас\",\n    ROUND(AVG(pr.price_ref)::numeric, 0) AS \"ср_цена_база\",\n    ROUND(AVG(((pr.price_now - pr.price_ref) / NULLIF(pr.price_ref, 0)) * 100)::numeric, 2) AS \"ср_изм_%\",\n    ROUND(100.0 * AVG(CASE WHEN pr.price_now < pr.price_ref THEN 1.0 ELSE 0.0 END), 2) AS \"доля_снижений_%\"\n  FROM priced pr\n  JOIN products p ON p.id = pr.product_id\n  WHERE pr.price_ref IS NOT NULL\n  GROUP BY 1, 2, 3\n  HAVING COUNT(*) >= 1\n  ORDER BY 8 DESC NULLS LAST, 7 ASC NULLS LAST\n  LIMIT 50\n)\nSELECT * FROM main\nUNION ALL\nSELECT\n  'Нет товаров в выборке'::text,\n  '-'::text,\n  '-'::text,\n  0::bigint,\n  0::numeric,\n  0::numeric,\n  0::numeric,\n  0::numeric\nWHERE NOT EXISTS (SELECT 1 FROM main LIMIT 1)",
           "refId": "A"
         }
       ],
-      "title": "Алерты по типу (7 дней)",
+      "title": "Топ размеров/диаметров по снижению (сезон мар–сен, база 7д→2д→пред.цена)",
       "type": "table"
     }
   ],
   "refresh": "30s",
   "schemaVersion": 39,
   "style": "dark",
-  "tags": ["price-monitor", "postgresql"],
-  "templating": {"list": []},
-  "time": {"from": "now-7d", "to": "now"},
+  "tags": [
+    "price-monitor",
+    "postgresql"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "brand",
+        "label": "Brand",
+        "type": "query",
+        "datasource": {
+          "type": "postgres",
+          "uid": "priceMonitor"
+        },
+        "definition": "SELECT DISTINCT COALESCE(brand, 'Unknown') AS brand FROM products ORDER BY brand",
+        "query": "SELECT DISTINCT COALESCE(brand, 'Unknown') AS brand FROM products ORDER BY brand",
+        "includeAll": true,
+        "allValue": "__all",
+        "multi": false,
+        "refresh": 1,
+        "sort": 1,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "__all"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
   "timepicker": {},
-  "timezone": "browser",
+  "timezone": "Asia/Irkutsk",
   "title": "Price Monitoring",
   "uid": "price-monitor-db",
   "version": 1,

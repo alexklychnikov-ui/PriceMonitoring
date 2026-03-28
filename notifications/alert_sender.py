@@ -32,8 +32,10 @@ class AlertSender:
             )
             return rows.first() is not None
 
-    async def send_price_drop_alert(self, alert: Alert, product: Product, chat_id: str) -> bool:
-        if await self._already_sent_recently(product.id, "price_drop"):
+    async def send_price_drop_alert(
+        self, alert: Alert, product: Product, chat_id: str, *, use_product_dedup: bool = True
+    ) -> bool:
+        if use_product_dedup and await self._already_sent_recently(product.id, "price_drop"):
             return False
         old_price = float(alert.old_value or 0)
         new_price = float(alert.new_value or 0)
@@ -53,7 +55,11 @@ class AlertSender:
         logger.info("message_sent chat_id=%s type=price_drop", chat_id)
         return True
 
-    async def send_price_rise_alert(self, alert: Alert, product: Product, chat_id: str) -> bool:
+    async def send_price_rise_alert(
+        self, alert: Alert, product: Product, chat_id: str, *, use_product_dedup: bool = True
+    ) -> bool:
+        if use_product_dedup and await self._already_sent_recently(product.id, "price_rise"):
+            return False
         old_price = float(alert.old_value or 0)
         new_price = float(alert.new_value or 0)
         change_pct = round(((new_price - old_price) / old_price) * 100, 2) if old_price else 0.0

@@ -29,5 +29,6 @@ app.conf.update(
         "scheduler.tasks.send_pending_alerts": {"queue": "notifications"},
         "scheduler.tasks.start_telegram_bot": {"queue": "notifications"},
         "scheduler.tasks.cleanup_old_data": {"queue": "maintenance"},
+        "scheduler.tasks.close_stale_parse_runs": {"queue": "scraping"},
     },
 )

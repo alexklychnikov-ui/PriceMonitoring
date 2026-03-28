@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
 from aiohttp import ClientResponseError
@@ -9,6 +9,18 @@ from aiohttp import ClientResponseError
 from scrapers.base import BaseScraper
 from scrapers.schemas import ProductDTO
 from scrapers.utils import build_external_id, clean_price, detect_season, parse_tire_size, split_brand_model
+
+
+def _dedupe_catalog_by_url_path(products: list[ProductDTO]) -> list[ProductDTO]:
+    """One card per catalog URL path; keep highest price to drop outlier lows from duplicate cards."""
+    best: dict[str, ProductDTO] = {}
+    for dto in products:
+        path = urlparse(dto.url).path.rstrip("/")
+        key = path if path else dto.external_id
+        cur = best.get(key)
+        if cur is None or dto.price > cur.price:
+            best[key] = dto
+    return list(best.values())
 
 
 class KolesaDaromScraper(BaseScraper):
@@ -67,13 +79,14 @@ class KolesaDaromScraper(BaseScraper):
                 spike = False
             elif "шип" in lowered_name:
                 spike = True
+            card_text = card.get_text(" ", strip=True)
             products.append(
                 ProductDTO(
                     external_id=build_external_id(self.site_name, name, url),
                     name=name,
                     brand=brand,
                     model=model,
-                    season=detect_season(name),
+                    season=detect_season(name, card_text),
                     spike=spike,
                     tire_size=tire.tire_size,
                     radius=tire.radius,
@@ -156,7 +169,7 @@ class KolesaDaromScraper(BaseScraper):
         unique: dict[str, ProductDTO] = {}
         for dto in products:
             unique[dto.external_id] = dto
-        return list(unique.values())
+        return _dedupe_catalog_by_url_path(list(unique.values()))
 
 
 if __name__ == "__main__":

@@ -13,6 +13,13 @@ from api.routers.sites import router as sites_router
 from config import settings
 
 
+def _cors_origins() -> list[str]:
+    raw = (settings.CORS_ORIGINS or "").strip()
+    if not raw:
+        return ["http://localhost:5173"]
+    return [p.strip() for p in raw.split(",") if p.strip()]
+
+
 _basic = HTTPBasic()
 
 
@@ -31,7 +38,7 @@ def _verify_swagger_basic_auth(credentials: HTTPBasicCredentials = Depends(_basi
 app = FastAPI(title="Price Monitor API", version="1.0.0", docs_url=None, redoc_url=None, openapi_url=None)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

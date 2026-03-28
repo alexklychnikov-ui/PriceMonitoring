@@ -72,7 +72,7 @@ export function SettingsPage() {
     if (Number.isNaN(date.getTime())) {
       return "—";
     }
-    return date.toLocaleString("ru-RU");
+    return date.toLocaleString("ru-RU", { timeZone: "Asia/Irkutsk" });
   };
 
   const saveSites = async () => {
@@ -165,8 +165,8 @@ export function SettingsPage() {
             style={{ display: "block", marginTop: 6, width: 140 }}
           />
         </label>
-        <div style={{ marginBottom: 10 }}>Время следующего обновления: {formatDateTime(parsingStatus?.next_update_at)}</div>
-        <div style={{ marginBottom: 12, opacity: 0.85 }}>Последний запуск: {formatDateTime(parsingStatus?.last_started_at)}</div>
+        <div style={{ marginBottom: 10 }}>Время следующего обновления (Иркутск): {formatDateTime(parsingStatus?.next_update_at)}</div>
+        <div style={{ marginBottom: 12, opacity: 0.85 }}>Последний запуск (Иркутск): {formatDateTime(parsingStatus?.last_started_at)}</div>
         <button type="button" onClick={runScrapeNow} disabled={triggerScrapeNow.isPending || (parsingStatus?.active_sites_count ?? 0) === 0} style={{ marginRight: 8 }}>
           {triggerScrapeNow.isPending ? "Запуск..." : "Обновить сейчас"}
         </button>

@@ -5,13 +5,22 @@ export const api = axios.create({
   baseURL: "/api",
 });
 
+const subscriptionKey = (import.meta.env.VITE_SUBSCRIPTION_WEB_KEY || "").trim();
+if (subscriptionKey) {
+  api.defaults.headers.common["X-Subscription-Key"] = subscriptionKey;
+}
+
 export async function fetchOverview(): Promise<Record<string, number>> {
   const { data } = await api.get("/analytics/overview");
   return data;
 }
 
-export async function fetchProducts(): Promise<{ items: Product[]; total: number }> {
-  const { data } = await api.get("/products");
+export async function fetchProducts(
+  includeUnavailable = false,
+): Promise<{ items: Product[]; total: number }> {
+  const { data } = await api.get("/products", {
+    params: { include_unavailable: includeUnavailable },
+  });
   return data;
 }
 
@@ -22,6 +31,21 @@ export async function fetchProduct(id: number): Promise<Product> {
 
 export async function fetchProductHistory(id: number): Promise<PriceHistory[]> {
   const { data } = await api.get(`/products/${id}/history`);
+  return data;
+}
+
+export async function fetchProductSubscription(productId: number): Promise<{ subscribed: boolean }> {
+  const { data } = await api.get(`/products/${productId}/subscription`);
+  return data;
+}
+
+export async function subscribeToProduct(productId: number): Promise<{ ok: boolean }> {
+  const { data } = await api.post(`/products/${productId}/subscription`);
+  return data;
+}
+
+export async function unsubscribeFromProduct(productId: number): Promise<{ ok: boolean }> {
+  const { data } = await api.delete(`/products/${productId}/subscription`);
   return data;
 }
 

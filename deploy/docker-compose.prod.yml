@@ -63,7 +63,7 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ../.env
-    command: celery -A scheduler.celery_app worker --loglevel=info -Q scraping,analysis,notifications -c 2
+    command: celery -A scheduler.celery_app worker --loglevel=info -Q scraping,analysis,notifications,maintenance -c 2
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:${DB_PASSWORD}@db:5432/price_monitor
       REDIS_URL: redis://redis:6379/0

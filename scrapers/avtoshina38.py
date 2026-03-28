@@ -60,13 +60,14 @@ class Avtoshina38Scraper(BaseScraper):
             discount_pct = None
             if old_price and old_price > 0 and old_price > current_price:
                 discount_pct = round((old_price - current_price) / old_price * 100, 2)
+            row_text = row.get_text(" ", strip=True)
             products.append(
                 ProductDTO(
                     external_id=build_external_id(self.site_name, name, product_url),
                     name=name,
                     brand=brand,
                     model=model,
-                    season=detect_season(name),
+                    season=detect_season(name, row_text),
                     tire_size=tire.tire_size,
                     radius=tire.radius,
                     width=tire.width,

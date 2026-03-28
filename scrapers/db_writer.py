@@ -6,7 +6,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models import Alert, PriceHistory, Product
+from db.models import Alert, PriceHistory, Product, UserSubscription
 from config import settings
 from scrapers.schemas import ProductDTO
 
@@ -19,7 +19,60 @@ def _normalize_season(value: str | None) -> str | None:
         return "Зима"
     if normalized in {"summer", "лето"}:
         return "Лето"
+    if normalized in {"allseason", "all season", "всесезон", "всесезонные", "всесезонная"}:
+        return "Всесезон"
     return None
+
+
+def _norm_name(value: str | None) -> str:
+    return " ".join((value or "").split())
+
+
+def _model_merge_ok(model: str | None) -> bool:
+    m = (model or "").strip().lower()
+    return bool(m) and m != "unknown"
+
+
+async def _find_merge_candidate(session: AsyncSession, site_id: int, dto: ProductDTO) -> Product | None:
+    season = _normalize_season(dto.season)
+    filters = [
+        Product.site_id == site_id,
+        Product.brand == dto.brand,
+        Product.tire_size == dto.tire_size,
+        Product.radius == dto.radius,
+        Product.diameter == dto.diameter,
+        Product.season == season,
+    ]
+    if dto.spike is None:
+        filters.append(Product.spike.is_(None))
+    else:
+        filters.append(Product.spike == dto.spike)
+
+    candidates = list(await session.scalars(select(Product).where(*filters)))
+    norm = _norm_name(dto.name)
+    for p in candidates:
+        if p.name == dto.name or _norm_name(p.name) == norm:
+            return p
+    if _model_merge_ok(dto.model):
+        for p in candidates:
+            if p.model == dto.model:
+                return p
+    return None
+
+
+def _apply_dto_to_product(product: Product, dto: ProductDTO) -> None:
+    product.external_id = dto.external_id
+    product.name = dto.name
+    product.brand = dto.brand
+    product.model = dto.model
+    product.season = _normalize_season(dto.season)
+    product.spike = dto.spike
+    product.tire_size = dto.tire_size
+    product.radius = dto.radius
+    product.width = dto.width
+    product.profile = dto.profile
+    product.diameter = dto.diameter
+    product.url = dto.url
 
 
 async def upsert_product(
@@ -30,30 +83,11 @@ async def upsert_product(
 ) -> Product:
     stmt = select(Product).where(Product.site_id == site_id, Product.external_id == dto.external_id)
     product = await session.scalar(stmt)
-    is_duplicate = False
 
     if product is None:
-        # If external_id is new, try to merge duplicates by a stable key within a site.
-        # Keep studded/non-studded and season as separate products to avoid
-        # false price jumps between different tire variants.
-        dup_filters = [
-            Product.site_id == site_id,
-            Product.name == dto.name,
-            Product.brand == dto.brand,
-            Product.tire_size == dto.tire_size,
-            Product.diameter == dto.diameter,
-            Product.season == _normalize_season(dto.season),
-        ]
-        if dto.spike is None:
-            dup_filters.append(Product.spike.is_(None))
-        else:
-            dup_filters.append(Product.spike == dto.spike)
-
-        dup_stmt = select(Product).where(*dup_filters)
-        duplicate = await session.scalar(dup_stmt)
-        if duplicate is not None:
-            product = duplicate
-            is_duplicate = True
+        merged = await _find_merge_candidate(session, site_id, dto)
+        if merged is not None:
+            product = merged
         else:
             product = Product(
                 site_id=site_id,
@@ -72,18 +106,8 @@ async def upsert_product(
             )
             session.add(product)
             await session.flush()
-    else:
-        product.name = dto.name
-        product.brand = dto.brand
-        product.model = dto.model
-        product.season = _normalize_season(dto.season)
-        product.spike = dto.spike
-        product.tire_size = dto.tire_size
-        product.radius = dto.radius
-        product.width = dto.width
-        product.profile = dto.profile
-        product.diameter = dto.diameter
-        product.url = dto.url
+
+    _apply_dto_to_product(product, dto)
 
     latest_price_stmt = (
         select(PriceHistory)
@@ -94,14 +118,6 @@ async def upsert_product(
     latest_price = await session.scalar(latest_price_stmt)
 
     new_price = Decimal(str(dto.price))
-    should_write_price = True
-    if is_duplicate and latest_price is not None:
-        # For duplicates: only accept a new price if it is lower than the DB price.
-        should_write_price = new_price < latest_price.price
-
-    if not should_write_price:
-        await session.flush()
-        return product
 
     history = PriceHistory(
         product_id=product.id,
@@ -124,7 +140,25 @@ async def upsert_product(
         else:
             change_pct = threshold_pct
 
-        if change_pct >= threshold_pct:
+        subscriber_wants_alert = False
+        subs = list(
+            await session.scalars(
+                select(UserSubscription).where(
+                    UserSubscription.product_id == product.id,
+                    UserSubscription.is_active.is_(True),
+                )
+            )
+        )
+        for sub in subs:
+            st = Decimal(sub.threshold_pct)
+            if st == 0 and change_pct > 0:
+                subscriber_wants_alert = True
+                break
+            if st > 0 and change_pct >= st:
+                subscriber_wants_alert = True
+                break
+
+        if change_pct >= threshold_pct or subscriber_wants_alert:
             alert_type = "price_drop" if new_price < latest_price.price else "price_rise"
             alert = Alert(
                 product_id=product.id,

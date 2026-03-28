@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import json
 import logging
+import statistics
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from langchain_core.messages import HumanMessage
 from langchain_community.llms import Ollama
@@ -21,6 +24,40 @@ from db.models import Alert, ParseRun, PriceHistory, Product, Site
 
 
 logger = logging.getLogger(__name__)
+
+_IRKUTSK_TZ = ZoneInfo("Asia/Irkutsk")
+
+_INVALID_OPENAI_KEYS = frozenset(
+    {
+        "",
+        "replace_me",
+        "change_me",
+        "your_proxyapi_key",
+        "xxx",
+    }
+)
+
+
+def _openai_api_key_invalid(key: str) -> bool:
+    return (key or "").strip().lower() in _INVALID_OPENAI_KEYS
+
+
+def _format_report_period_label() -> str:
+    now = datetime.now(_IRKUTSK_TZ)
+    end_d = now.date()
+    start_d = end_d - timedelta(days=7)
+    return f"{start_d.strftime('%d.%m.%Y')}—{end_d.strftime('%d.%m.%Y')} (Иркутск, 7 дн.)"
+
+
+def _pct_change(old_s: str | None, new_s: str | None) -> float | None:
+    try:
+        old_p = Decimal(str(old_s))
+        new_p = Decimal(str(new_s))
+    except (ArithmeticError, TypeError, ValueError):
+        return None
+    if old_p <= 0:
+        return None
+    return float((new_p - old_p) / old_p * Decimal("100"))
 
 
 @dataclass
@@ -51,6 +88,18 @@ class RecommendationEngine:
         return Ollama(base_url=settings.OLLAMA_BASE_URL, model=settings.OLLAMA_MODEL)
 
     async def _invoke_llm(self, prompt: str, fallback_text: str) -> tuple[str, int]:
+        if self.llm_provider == "openai" and _openai_api_key_invalid(settings.PROXY_API_KEY):
+            logger.warning("LLM skipped: PROXY_API_KEY empty or placeholder")
+            note = (
+                "\n\n### LLM\n"
+                "Сейчас `PROXY_API_KEY` пустой или заглушка (`REPLACE_ME` / `change_me`).\n"
+                "1) Ключ: https://proxyapi.ru\n"
+                "2) В `deploy/.env` замени строку `PROXY_API_KEY=...` (compose подставляет её в контейнеры).\n"
+                "3) Дублируй то же значение в корневом `price_monitor/.env`, если запускаешь без Docker.\n"
+                "4) `docker compose -f deploy/docker-compose.prod.yml up -d telegram_bot worker api`\n"
+                "Сеть до proxyapi.ru из контейнера есть; 401 от API = неверный ключ."
+            )
+            return fallback_text + note, 0
         llm = self._get_llm()
         try:
             response = await llm.ainvoke([HumanMessage(content=prompt)])
@@ -126,13 +175,77 @@ class RecommendationEngine:
         await self.cache.set_json(cache_key, asdict(result), ttl_seconds=3600)
         return result
 
-    async def generate_weekly_report(self) -> str:
-        cache_key = "ai:weekly_report"
-        cached = await self.cache.get_json(cache_key)
-        if cached and "report" in cached:
-            return str(cached["report"])
+    async def _weekly_moves_from_alerts(self, session, since: datetime) -> tuple[float, float, str, str]:
+        rows = (
+            await session.execute(
+                select(Alert, Product.id, Product.name, Site.name)
+                .join(Product, Product.id == Alert.product_id)
+                .join(Site, Site.id == Product.site_id)
+                .where(
+                    Site.is_active.is_(True),
+                    Alert.triggered_at >= since,
+                    Alert.alert_type.in_(["price_drop", "price_rise"]),
+                )
+                .order_by(Alert.triggered_at.desc())
+                .limit(800)
+            )
+        ).all()
 
-        week = datetime.now(timezone.utc).strftime("%Y-%W")
+        Row = tuple[float, int, str, str, str, str]
+
+        best_drop: dict[int, Row] = {}
+        best_rise: dict[int, Row] = {}
+        for alert, product_id, pname, sname in rows:
+            pct = _pct_change(alert.old_value, alert.new_value)
+            if pct is None:
+                continue
+            name = (pname or "")[:80]
+            site = (sname or "")[:32]
+            old_v = str(alert.old_value or "")
+            new_v = str(alert.new_value or "")
+            row: Row = (pct, int(product_id), name, site, old_v, new_v)
+            if alert.alert_type == "price_drop":
+                if pct >= 0:
+                    continue
+                cur = best_drop.get(int(product_id))
+                if cur is None or pct < cur[0]:
+                    best_drop[int(product_id)] = row
+            else:
+                if pct <= 0:
+                    continue
+                cur = best_rise.get(int(product_id))
+                if cur is None or pct > cur[0]:
+                    best_rise[int(product_id)] = row
+
+        for pid in list(best_drop.keys() & best_rise.keys()):
+            d_pct = best_drop[pid][0]
+            r_pct = best_rise[pid][0]
+            if abs(r_pct) >= abs(d_pct):
+                del best_drop[pid]
+            else:
+                del best_rise[pid]
+
+        drops = sorted(best_drop.values(), key=lambda x: x[0])
+        rises = sorted(best_rise.values(), key=lambda x: x[0], reverse=True)
+        top_d, top_r = drops[:5], rises[:5]
+
+        def _lines(items: list[Row]) -> str:
+            return "\n".join(f"- {n} ({s}): {o}→{nv} ₽ ({p:+.2f}%)" for p, _pid, n, s, o, nv in items)
+
+        avg_dec = float(statistics.mean(abs(x[0]) for x in drops)) if drops else 0.0
+        avg_inc = float(statistics.mean(x[0] for x in rises)) if rises else 0.0
+        disc = _lines(top_d) if top_d else "Нет снижений выше порога алертов за период."
+        inc_str = _lines(top_r) if top_r else "Нет повышений выше порога алертов за период."
+        return avg_dec, avg_inc, disc, inc_str
+
+    async def generate_weekly_report(self, force_refresh: bool = False) -> str:
+        cache_key = "ai:weekly_report"
+        if not force_refresh:
+            cached = await self.cache.get_json(cache_key)
+            if cached and "report" in cached:
+                return str(cached["report"])
+
+        week = _format_report_period_label()
         async with AsyncSessionLocal() as session:
             sites_count = int(await session.scalar(select(func.count(Site.id)).where(Site.is_active.is_(True))) or 0)
             products_count = int(
@@ -154,17 +267,30 @@ class RecommendationEngine:
                 )
                 or 0
             )
+            avg_decrease, avg_increase, top_discounts, top_increases = await self._weekly_moves_from_alerts(session, since)
+
         prompt = MARKET_OVERVIEW_PROMPT.format(
             sites_count=sites_count,
             products_count=products_count,
             price_changes_count=price_changes,
-            avg_decrease=0.0,
-            avg_increase=0.0,
-            top_discounts="Нет данных",
-            top_increases="Нет данных",
+            avg_decrease=round(avg_decrease, 2),
+            avg_increase=round(avg_increase, 2),
+            top_discounts=top_discounts,
+            top_increases=top_increases,
             week=week,
         )
-        fallback = f"## Обзор рынка шин Иркутск — {week}\n### Ключевые тренды\nДанных пока недостаточно.\n### Лучшие предложения недели\nНет данных.\n### На что обратить внимание\nПродолжайте накопление истории."
+        fallback = (
+            f"## Обзор рынка шин Иркутск — {week}\n"
+            f"### Сводка\n"
+            f"- Сайтов: {sites_count}, товаров в мониторинге: {products_count}\n"
+            f"- Алертов об изменении цены за 7 дн.: {price_changes}\n"
+            f"- Средняя величина снижения (по алертам): {round(avg_decrease, 2)}%\n"
+            f"- Средняя величина повышения (по алертам): {round(avg_increase, 2)}%\n"
+            f"### Крупнейшие снижения\n{top_discounts}\n"
+            f"### Крупнейшие повышения\n{top_increases}\n"
+            f"### Примечание\n"
+            f"Ниже — данные из БД; связный текст отчёта даёт LLM при успешном ответе API."
+        )
         report, tokens = await self._invoke_llm(prompt, fallback)
         logger.info("Weekly report tokens_used=%s", tokens)
         await self.cache.set_json(cache_key, {"report": report}, ttl_seconds=86400)

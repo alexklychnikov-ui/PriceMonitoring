@@ -15,4 +15,8 @@ CELERYBEAT_SCHEDULE = {
         "task": "scheduler.tasks.cleanup_old_data",
         "schedule": crontab(day_of_week=1, hour=3, minute=0),
     },
+    "close-stale-parse-runs": {
+        "task": "scheduler.tasks.close_stale_parse_runs",
+        "schedule": timedelta(hours=6),
+    },
 }

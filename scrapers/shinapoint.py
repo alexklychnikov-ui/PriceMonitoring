@@ -37,6 +37,7 @@ class ShinapointScraper(BaseScraper):
             href = link_el.get("href", "") if link_el else ""
             url = urljoin(self.base_url, href)
             brand, model = split_brand_model(name)
+            card_text = card.get_text(" ", strip=True)
             discount_pct = None
             if old_price and old_price > 0 and old_price > price:
                 discount_pct = round((old_price - price) / old_price * 100, 2)
@@ -46,7 +47,7 @@ class ShinapointScraper(BaseScraper):
                     name=name,
                     brand=brand,
                     model=model,
-                    season=detect_season(name),
+                    season=detect_season(name, card_text),
                     tire_size=tire.tire_size,
                     radius=tire.radius,
                     width=tire.width,

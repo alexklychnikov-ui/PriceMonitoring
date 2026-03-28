@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchProduct, fetchProductHistory, fetchProducts } from "../api/client";
 
-export function useProducts() {
+export function useProducts(includeUnavailable = false) {
   return useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
+    queryKey: ["products", { includeUnavailable }],
+    queryFn: () => fetchProducts(includeUnavailable),
   });
 }
 

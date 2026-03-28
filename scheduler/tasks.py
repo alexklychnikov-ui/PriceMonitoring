@@ -9,13 +9,15 @@ from typing import Any
 
 from celery import chord, group
 from redis.asyncio import Redis
-from sqlalchemy import delete, func, select
+from celery.exceptions import SoftTimeLimitExceeded
+from sqlalchemy import delete, exists, func, or_, select, update
+from sqlalchemy.orm import aliased
 from telegram.error import RetryAfter
 
 from ai_analysis.recommendation_engine import RecommendationEngine
 from config import settings
 from db.database import AsyncSessionLocal
-from db.models import Alert, ParseRun, PriceHistory, Product, Site
+from db.models import Alert, ParseRun, PriceHistory, Product, Site, UserSubscription
 from notifications.telegram import send_alert
 from runtime_settings import get_runtime_settings
 from notifications.telegram_bot import run_bot
@@ -26,6 +28,11 @@ from scrapers.db_writer import mark_missing_products_out_of_stock, upsert_produc
 
 logger = logging.getLogger(__name__)
 PRICE_ALERT_TYPES = ("price_drop", "price_rise", "price_changed", "new_low")
+
+# Celery time_limit=1800; soft limit и asyncio дают шанс записать failed до SIGKILL.
+_SCRAPER_ASYNC_TIMEOUT_SEC = 25 * 60
+_CELERY_SOFT_TIME_LIMIT_SEC = 29 * 60
+_STALE_PARSE_RUN_AFTER = timedelta(hours=2)
 
 
 async def _get_or_create_site(session, site_name: str) -> Site:
@@ -42,6 +49,25 @@ async def _get_or_create_site(session, site_name: str) -> Site:
     session.add(site)
     await session.flush()
     return site
+
+
+async def _mark_last_running_failed_for_site(site_name: str) -> None:
+    async with AsyncSessionLocal() as session:
+        site = await session.scalar(select(Site).where(Site.name == site_name))
+        if site is None:
+            return
+        run = await session.scalar(
+            select(ParseRun)
+            .where(ParseRun.site_id == site.id, ParseRun.status == "running", ParseRun.finished_at.is_(None))
+            .order_by(ParseRun.started_at.desc())
+            .limit(1)
+        )
+        if run is None:
+            return
+        run.status = "failed"
+        run.finished_at = datetime.now(timezone.utc)
+        run.errors_count = (run.errors_count or 0) + 1
+        await session.commit()
 
 
 async def _run_scrape_site(site_name: str, force: bool = False, trigger_type: str = "scheduled") -> dict[str, Any]:
@@ -90,7 +116,7 @@ async def _run_scrape_site(site_name: str, force: bool = False, trigger_type: st
         scraper = scraper_cls()
         scraper.parse_config = runtime["parsing"]
         alert_threshold_pct = Decimal(str(runtime["alerts"].get("min_change_pct", settings.PRICE_ALERT_THRESHOLD_PCT)))
-        products = await scraper.run()
+        products = await asyncio.wait_for(scraper.run(), timeout=_SCRAPER_ASYNC_TIMEOUT_SEC)
         async with AsyncSessionLocal() as session:
             run = await session.get(ParseRun, run.id)
             seen_external_ids: set[str] = set()
@@ -109,6 +135,16 @@ async def _run_scrape_site(site_name: str, force: bool = False, trigger_type: st
             run.products_found = len(products)
             await session.commit()
         return {"site_name": site_name, "status": "success", "products_found": len(products)}
+    except TimeoutError:
+        async with AsyncSessionLocal() as session:
+            run = await session.get(ParseRun, run.id)
+            if run is not None:
+                run.status = "failed"
+                run.finished_at = datetime.now(timezone.utc)
+                run.errors_count = (run.errors_count or 0) + 1
+                await session.commit()
+        logger.error("Scrape timeout for site=%s after %ss", site_name, _SCRAPER_ASYNC_TIMEOUT_SEC)
+        return {"site_name": site_name, "status": "failed", "reason": "timeout", "products_found": 0}
     except Exception as error:
         async with AsyncSessionLocal() as session:
             run = await session.get(ParseRun, run.id)
@@ -121,10 +157,20 @@ async def _run_scrape_site(site_name: str, force: bool = False, trigger_type: st
         raise
 
 
-@app.task(bind=True, max_retries=3, default_retry_delay=60, time_limit=1800, name="scheduler.tasks.scrape_site")
+@app.task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=60,
+    soft_time_limit=_CELERY_SOFT_TIME_LIMIT_SEC,
+    time_limit=1800,
+    name="scheduler.tasks.scrape_site",
+)
 def scrape_site(self, site_name: str, force: bool = False, trigger_type: str = "scheduled") -> dict[str, Any]:
     try:
         return asyncio.run(_run_scrape_site(site_name, force=force, trigger_type=trigger_type))
+    except SoftTimeLimitExceeded:
+        asyncio.run(_mark_last_running_failed_for_site(site_name))
+        raise
     except Exception as error:
         raise self.retry(exc=error, countdown=60)
 
@@ -279,14 +325,17 @@ def send_pending_alerts(self) -> dict[str, Any]:
                 except (InvalidOperation, TypeError, ValueError):
                     old_v = Decimal("0")
                     new_v = Decimal("0")
+                change_pct = Decimal("0")
                 if old_v > 0:
                     change_pct = (abs(new_v - old_v) / old_v) * Decimal("100")
-                    if change_pct < min_change_pct:
-                        alert.sent_at = datetime.now(timezone.utc)
-                        skipped += 1
-                        continue
+                send_to_main = change_pct >= min_change_pct
+                if send_to_main:
+                    if alert.alert_type in ("price_drop", "new_low") and not send_price_drop:
+                        send_to_main = False
+                    elif alert.alert_type == "price_rise" and not send_price_rise:
+                        send_to_main = False
                 try:
-                    ok = await send_alert(alert)
+                    ok = await send_alert(alert, send_to_main=send_to_main)
                 except RetryAfter as error:
                     logger.warning("Telegram flood control, retry_after=%s sec", getattr(error, "retry_after", None))
                     break
@@ -315,7 +364,29 @@ def cleanup_old_data(self) -> dict[str, int]:
         history_cutoff = now - timedelta(days=90)
         runs_cutoff = now - timedelta(days=30)
 
+        prune_cutoff = now - timedelta(days=max(int(settings.PRUNE_PRODUCTS_INACTIVE_DAYS), 30))
         async with AsyncSessionLocal() as session:
+            had_in_stock_recently = exists(
+                select(1).where(
+                    PriceHistory.product_id == Product.id,
+                    PriceHistory.in_stock.is_(True),
+                    PriceHistory.scraped_at >= prune_cutoff,
+                )
+            )
+            has_any_history = exists(select(1).where(PriceHistory.product_id == Product.id))
+            has_active_sub = exists(
+                select(1).where(
+                    UserSubscription.product_id == Product.id,
+                    UserSubscription.is_active.is_(True),
+                )
+            )
+            prune_result = await session.execute(
+                delete(Product).where(
+                    has_any_history,
+                    ~had_in_stock_recently,
+                    ~has_active_sub,
+                )
+            )
             history_result = await session.execute(
                 delete(PriceHistory).where(PriceHistory.scraped_at < history_cutoff)
             )
@@ -324,8 +395,41 @@ def cleanup_old_data(self) -> dict[str, int]:
             )
             await session.commit()
         return {
+            "deleted_stale_products": int(prune_result.rowcount or 0),
             "deleted_price_history": int(history_result.rowcount or 0),
             "deleted_parse_runs": int(runs_result.rowcount or 0),
         }
 
     return asyncio.run(_cleanup())
+
+
+@app.task(bind=True, name="scheduler.tasks.close_stale_parse_runs")
+def close_stale_parse_runs(self) -> dict[str, int]:
+    async def _close() -> dict[str, int]:
+        cutoff = datetime.now(timezone.utc) - _STALE_PARSE_RUN_AFTER
+        later = aliased(ParseRun)
+        superseded = exists(
+            select(1).where(
+                later.site_id == ParseRun.site_id,
+                later.status == "success",
+                later.started_at > ParseRun.started_at,
+            )
+        )
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                update(ParseRun)
+                .where(
+                    ParseRun.status == "running",
+                    ParseRun.finished_at.is_(None),
+                    or_(ParseRun.started_at < cutoff, superseded),
+                )
+                .values(
+                    status="failed",
+                    finished_at=datetime.now(timezone.utc),
+                    errors_count=func.coalesce(ParseRun.errors_count, 0) + 1,
+                )
+            )
+            await session.commit()
+        return {"closed_stale_parse_runs": int(result.rowcount or 0)}
+
+    return asyncio.run(_close())

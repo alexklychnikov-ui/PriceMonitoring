@@ -78,7 +78,7 @@ class ExpressShinaScraper(BaseScraper):
                     name=name,
                     brand=brand,
                     model=model,
-                    season=detect_season(name),
+                    season=detect_season(name, card_text),
                     spike=spike,
                     tire_size=tire.tire_size,
                     radius=tire.radius,

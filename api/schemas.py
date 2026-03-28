@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class ProductOut(BaseModel):
     id: int
     site_id: int
+    site_name: str | None = None
     name: str
     brand: str | None
     model: str | None
@@ -23,6 +24,7 @@ class ProductOut(BaseModel):
     max_price: float | None = None
     current_price: float | None = None
     updated_at: datetime | None = None
+    in_stock: bool | None = None
 
 
 class PriceHistoryPoint(BaseModel):

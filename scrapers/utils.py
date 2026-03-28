@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import re
 from dataclasses import dataclass
+from urllib.parse import urlparse, urlunparse
 
 from fake_useragent import UserAgent
 
@@ -52,9 +53,28 @@ def clean_price(raw: str) -> float | None:
         return None
 
 
-def detect_season(name: str) -> str:
+def season_from_catalog_text(card_text: str | None) -> str | None:
+    if not card_text or not card_text.strip():
+        return None
+    m = re.search(r"Сезон\s*:?\s*([а-яё]+)", card_text, flags=re.IGNORECASE)
+    if not m:
+        return None
+    word = m.group(1).lower()
+    if word.startswith("зим"):
+        return "winter"
+    if word.startswith("лет"):
+        return "summer"
+    if word.startswith("всесез"):
+        return "allseason"
+    return None
+
+
+def detect_season(name: str, card_text: str | None = None) -> str:
+    from_card = season_from_catalog_text(card_text)
+    if from_card is not None:
+        return from_card
     value = name.lower()
-    if any(token in value for token in ("winter", "зим", "шип", "ice")):
+    if any(token in value for token in ("winter", "зим", "шип", "ice", "snow")):
         return "winter"
     if any(token in value for token in ("summer", "лет", "sport")):
         return "summer"
@@ -95,6 +115,16 @@ def split_brand_model(name: str) -> tuple[str, str]:
     return brand, model
 
 
+def canonicalize_url_for_id(url: str) -> str:
+    p = urlparse((url or "").strip())
+    path = p.path or "/"
+    path = path.rstrip("/") or "/"
+    netloc = (p.netloc or "").lower()
+    scheme = (p.scheme or "https").lower()
+    return urlunparse((scheme, netloc, path, "", "", ""))
+
+
 def build_external_id(site_name: str, name: str, url: str) -> str:
-    raw = f"{site_name}|{name}|{url}"
+    norm_name = " ".join((name or "").split())
+    raw = f"{site_name}|{norm_name}|{canonicalize_url_for_id(url)}"
     return hashlib.md5(raw.encode("utf-8")).hexdigest()

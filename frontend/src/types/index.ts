@@ -1,6 +1,7 @@
 export type Product = {
   id: number;
   site_id: number;
+  site_name?: string | null;
   name: string;
   brand?: string | null;
   model?: string | null;
@@ -12,6 +13,8 @@ export type Product = {
   min_price?: number | null;
   max_price?: number | null;
   url: string;
+  in_stock?: boolean | null;
+  updated_at?: string | null;
 };
 
 export type Site = {

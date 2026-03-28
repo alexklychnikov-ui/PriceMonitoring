@@ -2,12 +2,18 @@ import axios from "axios";
 export const api = axios.create({
     baseURL: "/api",
 });
+const subscriptionKey = (import.meta.env.VITE_SUBSCRIPTION_WEB_KEY || "").trim();
+if (subscriptionKey) {
+    api.defaults.headers.common["X-Subscription-Key"] = subscriptionKey;
+}
 export async function fetchOverview() {
     const { data } = await api.get("/analytics/overview");
     return data;
 }
-export async function fetchProducts() {
-    const { data } = await api.get("/products");
+export async function fetchProducts(includeUnavailable = false) {
+    const { data } = await api.get("/products", {
+        params: { include_unavailable: includeUnavailable },
+    });
     return data;
 }
 export async function fetchProduct(id) {
@@ -16,6 +22,18 @@ export async function fetchProduct(id) {
 }
 export async function fetchProductHistory(id) {
     const { data } = await api.get(`/products/${id}/history`);
+    return data;
+}
+export async function fetchProductSubscription(productId) {
+    const { data } = await api.get(`/products/${productId}/subscription`);
+    return data;
+}
+export async function subscribeToProduct(productId) {
+    const { data } = await api.post(`/products/${productId}/subscription`);
+    return data;
+}
+export async function unsubscribeFromProduct(productId) {
+    const { data } = await api.delete(`/products/${productId}/subscription`);
     return data;
 }
 export async function fetchPriceChanges() {
