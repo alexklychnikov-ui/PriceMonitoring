@@ -23,5 +23,6 @@ Documentation/
 
 .DS_Store
 Thumbs.db
-Documentation/
-work.md
+
+# Локальный лог работ (не в репозитории / GitHub)
+/work.md
