@@ -1,5 +1,9 @@
 # Price Monitor
 
+![Каталог товаров](docs/images/products-catalog.png)
+![Grafana дашборд](docs/images/grafana-dashboard.png)
+
+
 Система мониторинга цен на шины: сбор данных с магазинов, хранение истории цен, API + веб-интерфейс, Telegram-бот и алерты.
 
 ## Руководство пользователя
