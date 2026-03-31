@@ -6,9 +6,9 @@ services:
     environment:
       POSTGRES_DB: price_monitor
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,7 +22,7 @@ services:
     container_name: price_monitor_redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
@@ -40,7 +40,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/price_monitor
+      DATABASE_URL: postgresql+asyncpg://postgres:${DB_PASSWORD}@db:5432/price_monitor
       REDIS_URL: redis://redis:6379/0
     volumes:
       - ./:/app
@@ -61,7 +61,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/price_monitor
+      DATABASE_URL: postgresql+asyncpg://postgres:${DB_PASSWORD}@db:5432/price_monitor
       REDIS_URL: redis://redis:6379/0
     volumes:
       - ./:/app
@@ -79,12 +79,12 @@ services:
     environment:
       CELERY_BROKER_URL: redis://redis:6379/0
       FLOWER_PORT: "5555"
-      FLOWER_BASIC_AUTH: "admin:secure_password"
+      FLOWER_BASIC_AUTH: "${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-change_me}"
     depends_on:
       redis:
         condition: service_healthy
     ports:
-      - "5555:5555"
+      - "127.0.0.1:5555:5555"
 
 volumes:
   postgres_data:
